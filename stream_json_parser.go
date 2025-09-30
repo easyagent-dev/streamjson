@@ -195,13 +195,39 @@ func (p *StreamJSONParser) processTokens() {
 			continue
 		}
 
-		// Only process completed tokens - tokenizer handles completion logic entirely
+		// Process both completed and incomplete tokens
 		if token.Completed {
 			p.processCompleteToken(token)
 		} else {
-			// For incomplete tokens, break and wait for more content
-			// The tokenizer will handle when they become complete
-			break
+			// Handle incomplete tokens for partial access
+			p.processIncompleteToken(token)
+			break // Break after handling incomplete token
+		}
+	}
+}
+
+// processIncompleteToken processes an incomplete token for partial access
+func (p *StreamJSONParser) processIncompleteToken(token Token) {
+	if len(p.stack) == 0 {
+		return // No active parsing context
+	}
+
+	currentFrame := p.stack[len(p.stack)-1]
+
+	// Handle incomplete strings for partial access
+	if token.TokenType == String && currentFrame.Node.Type == ObjectNode && currentFrame.CurrentKey != "" {
+		content := token.Content
+		if len(content) >= 1 && content[0] == '"' {
+			partialValue := content[1:] // Remove opening quote
+
+			// Provide partial access for any incomplete string
+			valueNode := NewNode(ValueNode)
+			valueNode.Value = partialValue
+			valueNode.Completed = false // Mark as incomplete
+			valueNode.Parent = currentFrame.Node
+
+			// Store the partial value in the AST
+			currentFrame.Node.Children[currentFrame.CurrentKey] = valueNode
 		}
 	}
 }

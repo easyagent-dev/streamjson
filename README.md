@@ -79,8 +79,8 @@ Access values as soon as they become available:
 parser := llmjson.NewStreamJSONParser()
 
 parser.Append(`{"message":"Hello`)
-// Value not available yet (incomplete string)
-msg := parser.Get("message")  // nil
+// Partial string content is available
+msg := parser.Get("message")  // "Hello"
 
 parser.Append(` World","status":"`)
 // Now message is complete

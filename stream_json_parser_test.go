@@ -114,15 +114,15 @@ func TestStreamJSONParserMultiAppendString(t *testing.T) {
 	parser.Append(`"Hel`)
 	// Should still be nil since string is incomplete
 	message = parser.Get("message")
-	if message != nil {
-		t.Errorf("Expected message to be nil for incomplete string, got %v", message)
+	if message != "Hel" {
+		t.Errorf("Expected message to be 'Hel' for incomplete string, got %v", message)
 	}
 
 	parser.Append(`lo wor`)
 	// Should still be nil since string is incomplete
 	message = parser.Get("message")
-	if message != nil {
-		t.Errorf("Expected message to be nil for incomplete string, got %v", message)
+	if message != "Hello wor" {
+		t.Errorf("Expected message to be 'Hello wor' for incomplete string, got %v", message)
 	}
 
 	parser.Append(`ld"`)
@@ -435,6 +435,40 @@ func TestStreamJSONParserArrayPartialAccess(t *testing.T) {
 	item2Name = parser.Get("items", "1", "name")
 	if item2Name != "Item2" {
 		t.Errorf("Expected second item name to be 'Item2', got %v", item2Name)
+	}
+
+	if !parser.IsCompleted() {
+		t.Errorf("Expected parser to be completed")
+	}
+}
+
+func TestStreamJSONParserIncrementalMessageStatus(t *testing.T) {
+	parser := NewStreamJSONParser()
+
+	parser.Append(`{"message":"Hello`)
+	// Value should be available even for incomplete string
+	msg := parser.Get("message") // "Hello"
+	if msg != "Hello" {
+		t.Errorf("Expected message to be 'Hello' for incomplete string, got %v", msg)
+	}
+
+	parser.Append(` World","status":"`)
+	// Now message is complete
+	msg = parser.Get("message") // "Hello World"
+	if msg != "Hello World" {
+		t.Errorf("Expected message to be 'Hello World', got %v", msg)
+	}
+
+	parser.Append(`success"}`)
+	status := parser.Get("status") // "success"
+	if status != "success" {
+		t.Errorf("Expected status to be 'success', got %v", status)
+	}
+
+	// Verify message value is still correct
+	msg = parser.Get("message")
+	if msg != "Hello World" {
+		t.Errorf("Expected message to still be 'Hello World', got %v", msg)
 	}
 
 	if !parser.IsCompleted() {
