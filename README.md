@@ -1,4 +1,4 @@
-# LLMJson - Streaming JSON Parser for Go
+# StreamJSON - Streaming JSON Parser for Go
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Go Version](https://img.shields.io/badge/Go-1.24.4+-00ADD8?style=flat&logo=go)](https://golang.org/)
@@ -18,7 +18,7 @@ A high-performance, memory-efficient streaming JSON parser designed for processi
 ## Installation
 
 ```bash
-go get github.com/easymvp/llmjson
+go get github.com/easymvp/streamjson
 ```
 
 ## Quick Start
@@ -28,20 +28,20 @@ package main
 
 import (
     "fmt"
-    "github.com/easymvp/llmjson"
+    "github.com/easymvp/streamjson"
 )
 
 func main() {
-    parser := llmjson.NewStreamJSONParser()
-    
+    parser := streamjson.NewStreamJSONParser()
+
     // Parse complete JSON
     parser.Append(`{"name":"John","age":30,"active":true}`)
-    
+
     // Access values
     name := parser.Get("name")        // "John"
     age := parser.Get("age")          // int64(30)
     active := parser.Get("active")    // true
-    
+
     fmt.Printf("Name: %s, Age: %d, Active: %t\n", name, age, active)
 }
 ```
@@ -53,7 +53,7 @@ func main() {
 Perfect for streaming scenarios where JSON arrives in chunks:
 
 ```go
-parser := llmjson.NewStreamJSONParser()
+parser := streamjson.NewStreamJSONParser()
 
 // JSON arrives in multiple chunks
 parser.Append(`{"user":{`)
@@ -76,7 +76,7 @@ if parser.IsCompleted() {
 Access values as soon as they become available:
 
 ```go
-parser := llmjson.NewStreamJSONParser()
+parser := streamjson.NewStreamJSONParser()
 
 parser.Append(`{"message":"Hello`)
 // Partial string content is available
@@ -95,7 +95,7 @@ status := parser.Get("status") // "success"
 Handle arrays with indexed access:
 
 ```go
-parser := llmjson.NewStreamJSONParser()
+parser := streamjson.NewStreamJSONParser()
 
 parser.Append(`[{"id":1,"name":"Item1"},{"id":2,"name":"Item2"}]`)
 
@@ -109,7 +109,7 @@ secondId := parser.Get("1", "id")      // int64(2)
 Parser continues working even with invalid data:
 
 ```go
-parser := llmjson.NewStreamJSONParser()
+parser := streamjson.NewStreamJSONParser()
 
 // Invalid tokens are tolerated
 parser.Append(`invalid text {"valid": true}`)
@@ -120,7 +120,7 @@ valid := parser.Get("valid")  // true
 ### Complex Nested Structures
 
 ```go
-parser := llmjson.NewStreamJSONParser()
+parser := streamjson.NewStreamJSONParser()
 
 jsonData := `{
     "response": {
@@ -218,7 +218,7 @@ The parser includes automatic memory management:
 ```go
 // Nodes are automatically returned to object pools
 // No manual cleanup required
-parser := llmjson.NewStreamJSONParser()
+parser := streamjson.NewStreamJSONParser()
 // ... use parser
 // Memory is automatically reclaimed
 ```
