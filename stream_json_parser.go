@@ -456,10 +456,14 @@ func (p *StreamJSONParser) Get(keys ...string) interface{} {
 // getFromNode recursively traverses the AST to find the value
 func (p *StreamJSONParser) getFromNode(node *Node, keys []string) interface{} {
 	if node == nil || len(keys) == 0 {
-		if node != nil && node.Type == ValueNode {
-			return node.Value
+		if node != nil {
+			if node.Type == ValueNode {
+				return node.Value
+			}
+			// Collect subvalues for non-value nodes
+			return p.collectNodeValue(node)
 		}
-		return node
+		return nil
 	}
 
 	key := keys[0]
@@ -472,7 +476,8 @@ func (p *StreamJSONParser) getFromNode(node *Node, keys []string) interface{} {
 				if child.Type == ValueNode {
 					return child.Value
 				}
-				return child
+				// Collect subvalues for non-value nodes
+				return p.collectNodeValue(child)
 			}
 			return p.getFromNode(child, remainingKeys)
 		}
@@ -486,11 +491,48 @@ func (p *StreamJSONParser) getFromNode(node *Node, keys []string) interface{} {
 					if child.Type == ValueNode {
 						return child.Value
 					}
-					return child
+					// Collect subvalues for non-value nodes
+					return p.collectNodeValue(child)
 				}
 				return p.getFromNode(child, remainingKeys)
 			}
 		}
+	}
+
+	return nil
+}
+
+// collectNodeValue collects all values from a node's children
+func (p *StreamJSONParser) collectNodeValue(node *Node) interface{} {
+	if node == nil {
+		return nil
+	}
+
+	switch node.Type {
+	case ObjectNode:
+		result := make(map[string]interface{})
+		for key, child := range node.Children {
+			if child.Type == ValueNode {
+				result[key] = child.Value
+			} else {
+				result[key] = p.collectNodeValue(child)
+			}
+		}
+		return result
+
+	case ArrayNode:
+		result := make([]interface{}, len(node.Array))
+		for i, child := range node.Array {
+			if child.Type == ValueNode {
+				result[i] = child.Value
+			} else {
+				result[i] = p.collectNodeValue(child)
+			}
+		}
+		return result
+
+	case ValueNode:
+		return node.Value
 	}
 
 	return nil
