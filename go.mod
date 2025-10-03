@@ -1,3 +1,3 @@
-module github.com/easymvp/streamjson
+module github.com/easymvp-ai/streamjson
 
 go 1.24.4
