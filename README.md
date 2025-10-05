@@ -18,7 +18,7 @@ A high-performance, memory-efficient streaming JSON parser designed for processi
 ## Installation
 
 ```bash
-go get github.com/easymvp-ai/streamjson
+go get github.com/easyagent-dev/streamjson
 ```
 
 ## Quick Start
@@ -28,7 +28,7 @@ package main
 
 import (
     "fmt"
-    "github.com/easymvp-ai/streamjson"
+    "github.com/easyagent-dev/streamjson"
 )
 
 func main() {
